@@ -143,6 +143,23 @@
     .note h3{font-family:var(--display);font-weight:600;font-size:19px;margin-bottom:8px;letter-spacing:-.01em}
     .note p{font-size:14px;color:var(--ink-2);line-height:1.65}
     .notes.embedded{padding-top:8px;padding-bottom:24px}
+
+    .guide{padding:28px 0 8px}
+    .guide h2{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:28px 0 12px;padding-bottom:10px;border-bottom:1px solid var(--soft-line)}
+    .guide h2:first-of-type{margin-top:0}
+    .guide-toc{display:flex;flex-wrap:wrap;gap:.35rem .9rem;margin:0 0 18px;font-size:13px}
+    .guide-toc a{color:var(--rose)}
+    .guide-pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    @media (max-width:699px){.guide-pair{grid-template-columns:1fr}}
+    .guide-box{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px}
+    .guide-box.use{border-left:3px solid var(--sage)}
+    .guide-box.dont{border-left:3px solid var(--rose)}
+    .guide-box h3{font-family:var(--display);font-weight:600;font-size:18px;margin:0 0 8px;letter-spacing:-.01em}
+    .guide-box ul,.guide ol{margin:0;padding-left:1.15rem}
+    .guide li{font-size:14px;color:var(--ink-2);line-height:1.65;margin:.4rem 0}
+    .guide li b{color:var(--ink);font-weight:600}
+    .guide-close{font-size:14px;color:var(--ink-2);line-height:1.65;margin:10px 0 0}
+
     @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.cell:hover{transform:none}}
   </style>
 </head>
@@ -1134,6 +1151,39 @@
         el('p',null,"The portfolio row adds each simulated year across risks before anything is sorted, because a bad year for one risk is not necessarily a bad year for another. Adding the individual bad-year figures instead would overstate the total. The version here assumes the risks are independent; real ones often are not, and correlation is where a production model earns its keep.")));
   }
 
+  function Guide(){
+    return el('section',{className:"wrap guide","aria-label":"How to use this"},
+      el('nav',{className:"guide-toc","aria-label":"On this page"},
+        el('a',{href:"#when"},"When to use it"),
+        el('a',{href:"#how"},"How to use it"),
+        el('a',{href:"#org"},"Take it into your org")),
+      el('h2',{id:"when"},"When and where to use it"),
+      el('div',{className:"guide-pair"},
+        el('div',{className:"guide-box use"},el('h3',null,"Use it when"),
+          el('ul',null,
+            el('li',null,"A heat-map register is already in use and someone has asked what a cell is worth."),
+            el('li',null,"Two risks share a square and you need to show they are not the same risk."),
+            el('li',null,"You are teaching why a colour cannot be added, compared to a budget, or used to price a control."),
+            el('li',null,"You want a first loss number for a handful of risks before standing up a real engine."))),
+        el('div',{className:"guide-box dont"},el('h3',null,"Do not use it when"),
+          el('ul',null,
+            el('li',null,"You are about to quote the cell starting ranges as calibrated data. They are teaching values."),
+            el('li',null,"The risks are in different currencies and you still want a total. There is no FX table, on purpose."),
+            el('li',null,"You need correlation, a controls model, or a figure you would take to capital. This file has none of those, and no tests.")))),
+      el('h2',{id:"how"},"How to use it"),
+      el('ol',null,
+        el('li',null,el('b',null,"Place. "),"Tap up to five cells on the matrix. Each cell hands its risk an illustrative frequency and loss range, so the model has something to run on immediately."),
+        el('li',null,el('b',null,"Parameterise. "),"Open a card and type your own low, likely and high, or load a source-backed benchmark. A cited range and a typed range should not look the same, and here they do not."),
+        el('li',null,el('b',null,"Read. "),"Ten thousand simulated years per risk, live as you type. The ledger puts a typical year, an average, a 1-in-10 year and the share of loss-free years next to the cell the risk came from. With more than one risk in the same currency, the last row is the portfolio, summed year by year before anything is sorted.")),
+      el('h2',{id:"org"},"Take it into your organisation"),
+      el('ol',null,
+        el('li',null,el('b',null,"Start from the five risks that already have a colour and a budget conversation. "),"Do not begin with a blank register."),
+        el('li',null,el('b',null,"Replace the illustrative ranges "),"with incident history or a shard whose sources you have read, including the limitation."),
+        el('li',null,el('b',null,"Put the typical year and the bad year next to the cell "),"in the next register review. When two risks share a tint but not a number, that is the argument."),
+        el('li',null,el('b',null,"Do not scale this file into a production register. "),"Take the rule: a cell is a position; a year-by-year sum is an amount. Correlation and controls need a real engine.")),
+      el('p',{className:"guide-close"},"The notes below are the honest limits. Read them before you quote a figure."));
+  }
+
   // ------------------------------------------------------------------- app
   function App(){
     const narrow=useNarrow(900);
@@ -1173,6 +1223,7 @@
         el('div',{className:"kicker"},"RootCaws · Risk lab"),
         el('h1',null,"Risk ",el('em',null,"Quantifier")),
         el('p',{className:"deck"},"Start where most registers start, on a five-by-five matrix. Give each placed risk the frequency and loss range its cell was standing in for, run ten thousand simulated years, and compare what the colour told you with what the distribution does.")),
+      !EMBEDDED&&el(Guide),
       el('div',{className:"wrap bench"},
         el('aside',{className:"card controls","aria-label":"Matrix"},
           el('div',{className:"label-row"},el('span',{className:"label"},"The matrix"),el('span',{className:"unit"},"tap a cell to place, tap again to remove")),

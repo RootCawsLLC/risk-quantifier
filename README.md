@@ -4,7 +4,7 @@ From a five-by-five matrix to a loss distribution. Place up to five risks on a l
 grid, give each the frequency and loss range its cell was standing in for, and read what ten
 thousand simulated years say about each of them, and about all of them together.
 
-**Live:** https://rootcawsllc.github.io/risk-quantifier/
+**Live:** https://rootcawsllc.github.io/risk-quantifier/ — when to use it, how to use it, and how to take the pattern into an organisation.
 
 ![Two risks placed on the matrix, which sits in the left-hand panel with muted low, medium and high tints. On the right, each risk has a card with its cell, a starting-point picker and low/likely/high fields for frequency and loss per event; the first has been loaded from a UK financial-services data-breach benchmark and shows its badges, a "not good for" caveat and six cited sources with their limitations. Below, a ledger compares what the matrix said with what the model says, one row per risk with a small histogram, a typical year, an average, a bad year and the share of loss-free years; the portfolio total is withheld because the two risks are priced in different currencies](preview.png)
 
