@@ -49,7 +49,7 @@
     .masthead h1 em{font-style:italic;color:var(--rose)}
     .deck{font-size:17px;color:var(--ink-2);line-height:1.6}
 
-    .bench{display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:20px;align-items:start;padding-top:24px}
+    .bench{display:grid;grid-template-columns:minmax(320px,420px) minmax(0,1fr);gap:20px;align-items:start;padding-top:24px}
     @media (max-width:899px){.bench{grid-template-columns:1fr}}
     .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
     .controls{position:sticky;top:16px;padding:18px}
@@ -74,10 +74,10 @@
     .triple .sub{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
 
     /* the matrix */
-    .matrix{display:grid;grid-template-columns:auto repeat(5,1fr);gap:4px;align-items:stretch}
-    .matrix .ax{font-size:9.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;padding:2px}
+    .matrix{display:grid;grid-template-columns:auto repeat(5,minmax(0,1fr));gap:4px;align-items:stretch}
+    .matrix .ax{min-width:0;hyphens:manual;overflow-wrap:anywhere;font-size:9px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;padding:2px}
     .matrix .ax.y{justify-content:flex-end;padding-right:6px;text-align:right;max-width:76px}
-    .cell{position:relative;aspect-ratio:1/1;border-radius:8px;border:1px solid transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .12s,border-color .12s}
+    .cell{min-width:0;position:relative;aspect-ratio:1/1;border-radius:8px;border:1px solid transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .12s,border-color .12s}
     .cell:hover{transform:scale(1.04);border-color:var(--ink)}
     .cell.low{background:var(--sage-soft)}
     .cell.mid{background:var(--amber-soft)}
@@ -142,7 +142,7 @@
     @media (max-width:899px){.notes{grid-template-columns:1fr}}
     .note h3{font-family:var(--display);font-weight:600;font-size:19px;margin-bottom:8px;letter-spacing:-.01em}
     .note p{font-size:14px;color:var(--ink-2);line-height:1.65}
-    .notes.embedded{padding-top:8px}
+    .notes.embedded{padding-top:8px;padding-bottom:24px}
     @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.cell:hover{transform:none}}
   </style>
 </head>
@@ -162,6 +162,8 @@
   const MAX_RISKS=5;
   const ROWS=["Rare","Unlikely","Possible","Likely","Almost certain"];      // likelihood, bottom to top
   const COLS=["Negligible","Minor","Moderate","Major","Severe"];            // impact, left to right
+  // Axis labels only: a soft hyphen lets the longest word break cleanly when the column is narrow.
+  const COLS_AXIS=["Negli­gible","Minor","Moderate","Major","Severe"];
   // Illustrative starting ranges for each row and column, so a cell is an
   // on-ramp into the model rather than a lookup table. Adjust them; do not
   // ship them.
@@ -1004,7 +1006,7 @@
       }
     }
     rows.push(el('div',{key:"corner",className:"ax"}));
-    COLS.forEach((c,i)=>rows.push(el('div',{key:"x"+i,className:"ax"},c)));
+    COLS_AXIS.forEach((c,i)=>rows.push(el('div',{key:"x"+i,className:"ax"},c)));
     return el('div',null,
       el('div',{className:"matrix",role:"grid","aria-label":"Likelihood by impact matrix"},rows),
       el('div',{className:"axis-title"},"impact per event →"),
@@ -1192,6 +1194,16 @@
             el('div',{className:"panel-head"},el('h2',null,"What the matrix said, and what the model says"),el('span',{className:"tag"},"live")),
             el(Ledger,{risks,results:sim.results,total:sim.total,mixed:sim.mixed})))),
       el(Notes));
+  }
+
+  // Embedded in the portfolio risk lab, which is on another origin and cannot
+  // measure this document. Report the page height so the frame can fit it.
+  if(EMBEDDED){
+    let lastHeight=0;
+    const reportHeight=()=>{const h=Math.ceil(document.documentElement.getBoundingClientRect().height);if(h>0&&h!==lastHeight){lastHeight=h;window.parent.postMessage({type:"risk-lab:height",height:h},"*");}};
+    if(typeof ResizeObserver!=="undefined")new ResizeObserver(reportHeight).observe(document.body);
+    window.addEventListener("load",reportHeight);
+    setTimeout(reportHeight,0);
   }
 
   ReactDOM.createRoot(document.getElementById('root')).render(el(App));
