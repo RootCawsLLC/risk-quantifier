@@ -1,75 +1,112 @@
-# Risk Quantifier: Heatmap to Histogram
+# Risk Quantifier
 
-An interactive tool for converting qualitative risk matrices into quantitative probability distributions using Monte Carlo simulation.
+From a five-by-five matrix to a loss distribution. Place up to five risks on a likelihood-by-impact
+grid, give each the frequency and loss range its cell was standing in for, and read what ten
+thousand simulated years say about each of them, and about all of them together.
 
 **Live:** https://rootcawsllc.github.io/risk-quantifier/
 
-![Two risks placed on a 5x5 heat map. The first has been loaded from a UK financial-services data-breach benchmark, labelled "GBP · starter with source backed UK direct parameters · module governed · 6 medium" and showing its frequency and impact ranges, a "not good for" caveat, and all six cited sources with their individual limitations. Below, the two risks produce separate loss distributions in GBP and USD, and the portfolio total is withheld because the currencies differ](preview.png)
+![Two risks placed on the matrix, which sits in the left-hand panel with muted low, medium and high tints. On the right, each risk has a card with its cell, a starting-point picker and low/likely/high fields for frequency and loss per event; the first has been loaded from a UK financial-services data-breach benchmark and shows its badges, a "not good for" caveat and six cited sources with their limitations. Below, a ledger compares what the matrix said with what the model says, one row per risk with a small histogram, a typical year, an average, a bad year and the share of loss-free years; the portfolio total is withheld because the two risks are priced in different currencies](preview.png)
 
-The same two risks, twice. On the heat map, two colored cells — no amounts, no ranges, nothing to decide on. Below, two loss distributions with percentiles you can budget against. That gap is the whole point of the tool.
+## What it does
 
-The first risk also shows the second point: its numbers came from a benchmark, so every one of them arrives with the source that produced it and the limitation that source carries.
+- **The matrix is the control.** Tap a cell to place a risk, tap it again to remove it. Each cell
+  hands the risk an illustrative starting range for frequency and for loss per event, so placing
+  a risk gives the model something to run on straight away.
+- **Say what the cell meant.** Every placed risk gets a card with a frequency in events per year
+  and a loss per event, each as a low, likely and high. Or pick a source-backed benchmark and
+  replace the illustrative range with one that cites a public source for every parameter, carries
+  that source's stated limitation, sets the currency, and says what it is *not* good for.
+- **Live results.** Ten thousand simulated years per risk, recomputed whenever anything changes.
+  A ledger shows one row per risk: the cell it came from, a small histogram of the years, the
+  typical year (median), the average, the bad year (1 in 10) and the share of loss-free years.
+  With more than one risk in the same currency, a final row shows the portfolio total, summed year
+  by year before sorting. Mixed currencies get a note instead of a total.
+- **The comparison is the point.** Above the ledger: how many cells and how many colours the
+  matrix had to offer, against how many distributions came out. A cell is a position and a tint
+  shared with every other risk in the same band; a row is an amount.
 
-## Features
+## How it works
 
-- **Interactive 5×5 Risk Heatmap** - Click to place up to 5 risks across likelihood and impact dimensions
-- **Risk Parameterization** - Define min/likely/max values for frequency (events per year) and impact (per event) as PERT distributions, pre-filled from where you clicked on the heat map
-- **Source-backed benchmarks** - Load a governed starting range for a country, sector and threat instead of typing one. Eleven shards across eight countries; each parameter shows its source, publication, confidence level and stated limitation, and each shard states what it is *not* good for
-- **Currency handling** - Benchmarks are priced in their own currency (AUD, CAD, GBP, USD). Results are labelled accordingly, and the portfolio total is withheld rather than summing across currencies
-- **Per-Risk Result Cards** - Each risk displays a loss histogram plus median (P50), expected value, and bad-year (P90) figures
-- **Compound Poisson Simulation** - 10,000 iterations per risk; annual frequency drives a Poisson-distributed event count, and every event draws its own independent impact
-- **Aggregate Results** - Combined annual loss statistics across all risks, summed year by year rather than by percentile, when every risk shares a currency
-- **Responsive Design** - Works on desktop and tablet
-- **Professional Color Palette** - Cohesive, accessible design system
+Each risk starts life as a click, and the cell you click sets a real starting range, not a
+placeholder: "Rare / Negligible" and "Almost certain / Severe" produce genuinely different frequency
+and loss ranges, not the same three numbers with a different colour. That is the point of routing
+the matrix into a simulation instead of stopping at it.
 
-## Usage
-
-1. Click cells on the heatmap to place up to 5 risks
-2. Each placed risk gets a parameter panel, pre-filled from the cell you clicked
-3. Optionally pick a benchmark to replace those defaults with source-backed ranges, then read what that shard is not good for
-4. Adjust frequency and impact parameters (min/likely/max) if you want to move off either starting point
-5. Click "Run Simulation (10,000 iterations)"
-6. View each risk's loss distribution, and — with more than one risk placed, all in the same currency — the portfolio total
-
-## How It Works
-
-Each risk starts life as a heat-map click, and the cell you click sets a real starting range, not a placeholder: "Rare / Negligible" and "Almost Certain / Severe" produce genuinely different frequency and impact ranges, not the same three numbers with a different color. That's the actual point of routing the heat map into a simulation instead of stopping at it — the familiar click becomes an on-ramp into quantification rather than the answer itself.
-
-Those cell ranges are still invented, though, which is the honest weakness of every tool like this. So each risk can instead be loaded from a benchmark: a governed shard for a country, sector and threat where every parameter traces to a named public source. Picking one replaces the range, sets the currency, and shows the six citations behind it alongside the shard's own statement of what it will not support. The numbers get better and the caveats arrive with them — a range with no provenance and a range with six sourced parameters should not look equally authoritative, and here they don't.
+Those cell ranges are still invented, which is the honest weakness of every tool like this. So each
+risk can instead be loaded from a benchmark: a governed shard for a country, sector and threat
+where every parameter traces to a named public source. Picking one replaces the range, sets the
+currency, and shows the citations behind it alongside the shard's own statement of what it will not
+support. A range with no provenance and a range with six sourced parameters should not look equally
+authoritative, and here they do not.
 
 From there, each simulated year:
 
-1. **Frequency** is drawn from a PERT distribution over your min/likely/max — PERT rather than a plain triangle because it weights the "most likely" point instead of treating it as no more probable than the edges.
-2. That frequency becomes the rate of a **Poisson draw**, which is what produces the actual event count for the year. A frequency of "3 times a year" does not mean exactly 3 — most years will be near it, some will be 0, a few will be considerably more.
-3. **Every event that year gets its own independent impact draw**, also from a PERT distribution, and the year's total is the sum of them.
+1. **Frequency** is drawn from a PERT distribution over the low, likely and high. PERT rather than
+   a plain triangle because it weights the likely point instead of treating it as no more probable
+   than the edges.
+2. That frequency becomes the rate of a **Poisson draw**, which produces the actual event count for
+   the year. A frequency of three a year does not mean exactly three: most years will be near it,
+   some will be zero, a few will be considerably more.
+3. **Every event that year gets its own independent loss draw**, also PERT, and the year's total is
+   the sum of them.
 
-That last step is the one that matters most. The common shortcut in tools like this is `total = numEvents × oneImpactDraw` — treating a year with three events as a year with one event that cost three times as much. Those are different distributions: the shortcut suppresses variance and understates the tail, because the tail is exactly the case where several bad things land in the same year. This tool sums independent draws instead.
+That last step is the one that matters most. The common shortcut is `total = events × one loss
+draw`, treating a year with three events as a year with one event that cost three times as much.
+Those are different distributions: the shortcut suppresses variance and understates the tail,
+because the tail is exactly the case where several bad things land in the same year.
 
-When more than one risk is placed, the portfolio total is the year-by-year **sum** of every risk's simulated losses — not the sum of their individual percentiles, which is a different and larger error (percentiles don't add; sums of random variables aren't the sum of their quantiles).
+When more than one risk is placed, the portfolio total is the year-by-year **sum** of every risk's
+simulated losses, not the sum of their individual percentiles, which is a different and larger
+error. Percentiles do not add.
 
 ## Deployment
 
-This is a standalone HTML file with no dependencies. Deploy to any web server or use locally by opening `index.html` in your browser.
-
-### GitHub Pages
-
-Deployed at https://rootcawsllc.github.io/risk-quantifier/.
+A standalone HTML file with no dependencies and no build step. The benchmark data is inlined, so
+the file works opened straight from the filesystem as well as from any web server. Deployed to
+GitHub Pages at https://rootcawsllc.github.io/risk-quantifier/.
 
 ## Honest limits
 
-- **Per-event impacts are drawn fully independently within a year.** Real losses are rarely that clean — a breach severe enough to trigger a large notification cost is also more likely to trigger a large liability claim. This tool doesn't model that correlation; yeetmap's priced loss modules do, via shared per-event latents.
-- **The default range for each heat-map cell is illustrative, not calibrated.** They exist so a click produces a real, distinct starting range instead of an arbitrary flat one — adjust them, or load a benchmark, before treating any output as a real estimate for your organisation.
-- **The benchmarks are starting points, not benchmark-grade figures.** Each shard carries its own status, and most are labelled governed starters rather than reviewed benchmarks. Several borrow a frequency from another country because no local per-firm rate is published — the US data-breach shard uses a UK survey as a bridge, and says so in its own caveat. Read the per-parameter limitations before quoting any of it.
-- **Benchmark data is a snapshot.** The figures are baked into `index.html` from one specific upstream commit. They do not update themselves; regenerate when the shards change.
-- **No FX conversion.** Shards are priced in their own currency and there is no rate table, which is why a mixed-currency portfolio shows no total rather than a converted one.
-- **No controls model, no reproducible seeding, and no provenance for anything you type by hand.** Benchmark parameters carry their sources; values you enter yourself carry nothing. This is a single-file teaching tool, not an audited engine. It has no tests. For the real thing — FAIR-CAM controls, an inverse pass, AI-assisted extraction with a strict tool schema, 300+ tests — see yeetmap.
-- **Not a substitute for a real risk assessment.** It exists to make one specific point vivid: a heat map cell and a loss distribution are not the same kind of answer, and only one of them supports arithmetic.
+- **Per-event losses are drawn fully independently within a year.** Real losses are rarely that
+  clean: a breach severe enough to trigger a large notification cost is also more likely to
+  trigger a large liability claim. This tool does not model that correlation; yeetmap's priced
+  loss modules do, via shared per-event latents.
+- **The starting range for each cell is illustrative, not calibrated.** It exists so a click
+  produces a real, distinct range instead of an arbitrary flat one. Adjust it, or load a
+  benchmark, before treating any output as an estimate for your organisation.
+- **The benchmarks are starting points, not benchmark-grade figures.** Each shard carries its own
+  status, and most are governed starters rather than reviewed benchmarks. Several borrow a
+  frequency from another country because no local per-firm rate is published, and say so in their
+  own caveat. Read the per-parameter limitations before quoting any of it.
+- **Benchmark data is a snapshot.** The figures are baked into `index.html` from one upstream
+  commit and do not update themselves; regenerate when the shards change.
+- **No FX conversion.** Shards are priced in their own currency and there is no rate table, which
+  is why a mixed-currency portfolio shows no total rather than a converted one.
+- **No controls model, no reproducible seeding, and no provenance for anything typed by hand.**
+  Benchmark parameters carry their sources; values you enter yourself carry nothing. This is a
+  single-file teaching tool, not an audited engine, and it has no tests. For the real thing, with
+  FAIR-CAM controls, an inverse pass, AI-assisted extraction with a strict tool schema and a full
+  test suite, see yeetmap.
+- **Not a substitute for a real risk assessment.** It exists to make one point vivid: a cell on a
+  matrix and a loss distribution are not the same kind of answer, and only one of them supports
+  arithmetic.
 
 ## Attribution
 
-Benchmark shards come from [RiskShard](https://github.com/raviaxo/RiskShard) by [raviaxo](https://github.com/raviaxo) — an evidence-governed cyber risk quantification project, AGPL-3.0, where every parameter traces to a reviewed public source. The frequency and impact ranges, source citations, confidence levels, and "not good for" statements in this tool are RiskShard's, carried through unchanged; the picker and the simulation are not. Each shard's underlying sources are credited individually in the tool itself and remain the property of their publishers.
+Benchmark shards come from [RiskShard](https://github.com/raviaxo/RiskShard) by
+[raviaxo](https://github.com/raviaxo), an evidence-governed cyber risk quantification project,
+AGPL-3.0, where every parameter traces to a reviewed public source. The frequency and impact
+ranges, source citations, confidence levels and "not good for" statements in this tool are
+RiskShard's, carried through unchanged; the picker, the matrix and the simulation are not. Each
+shard's underlying sources are credited individually in the tool itself and remain the property of
+their publishers.
 
-Uses the same compound-Poisson approach — frequency as a Poisson rate, independent per-event magnitudes summed, not multiplied — as yeetmap, this author's full FAIR (Factor Analysis of Information Risk) quantification engine. FAIR itself is a model published by the [FAIR Institute](https://www.fairinstitute.org/); this tool does not implement or reproduce FAIR's published standards, only the same underlying simulation principle.
+Uses the same compound-Poisson approach as yeetmap, this author's full FAIR (Factor Analysis of
+Information Risk) quantification engine: frequency as a Poisson rate, independent per-event
+magnitudes summed, not multiplied. FAIR itself is a model published by the
+[FAIR Institute](https://www.fairinstitute.org/); this tool does not implement or reproduce
+FAIR's published standards, only the same underlying simulation principle.
 
 ## License
 
